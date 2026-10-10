@@ -1,0 +1,8 @@
+@read1 first paired read
+ATGAAAGCAGGGCTGTAA
++
+IIIIIIIIIIIIIIIIII
+@read2 second paired read
+ATGAAGCTTGCGGAATAC
++
+IIIIIIIIII#I(8=IAA

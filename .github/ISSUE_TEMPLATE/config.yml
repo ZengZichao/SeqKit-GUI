@@ -1,0 +1,45 @@
+# GitHub issue-forms configuration.
+#
+# blank_issues_enabled: false -- a blank issue cannot carry the environment, the
+# seqkit version, or the assembled command line, which is what every report here
+# needs before anyone can say anything useful. The three templates under
+# .github/ISSUE_TEMPLATE/ cover bug / feature request / parameter-table mismatch.
+blank_issues_enabled: false
+
+contact_links:
+  # This GUI does not compute anything: it assembles arguments and calls the
+  # official seqkit executable. Crashes, wrong results and performance questions
+  # about seqkit itself belong upstream, not here.
+  - name: SeqKit 本体问题 / Problems in seqkit itself
+    url: https://github.com/shenwei356/seqkit/issues
+    about: seqkit 命令行的崩溃、性能与结果问题请找上游。本 GUI 只调用官方 seqkit，不重新分发它。
+
+  # The parameter table shown in the interface is generated from this document's
+  # source tree, so flag meanings and examples live here.
+  - name: SeqKit 官方文档 / SeqKit documentation
+    url: https://bioinf.shenwei.me/seqkit/
+    about: 参数含义、示例与上游说明 / Flag meanings, examples and upstream reference.
+
+  # ---------------------------------------------------------------------
+  # 待人类决定 / pending a human decision -- leave these commented out until
+  # the repository actually exists and the feature is turned on. An active link
+  # with an unresolved placeholder would 404 for every user who clicked it.
+  #
+  # 1) The repository URL has to be filled in before this link can be enabled:
+  #    <待填写:仓库地址>  (e.g. https://github.com/<owner>/<repo>)
+  #
+  # - name: 提问与使用咨询 / Ask a question
+  #   url: https://github.com/<待填写:仓库地址>/discussions
+  #   about: 用法咨询、环境搭建、不确定是不是 bug 的先来讨论区；确定是缺陷的请开 issue。
+  #
+  #    Enabling this requires turning on Discussions in the repository's Settings
+  #    -> Features -> Discussions, which is a web-side action. See SUPPORT.md for
+  #    the no-Discussions fallback (issues only).
+  #
+  # 2) Once the repository URL is known, a link to SECURITY.md can be added so
+  #    reporters have a non-public route:
+  #
+  # - name: 安全问题披露 / Report a vulnerability
+  #   url: https://github.com/<待填写:仓库地址>/security/policy
+  #   about: 请不要在公开 issue 里报告漏洞，披露方式见 SECURITY.md。
+  # ---------------------------------------------------------------------

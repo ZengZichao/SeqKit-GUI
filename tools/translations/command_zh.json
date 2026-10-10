@@ -1,0 +1,149 @@
+{
+ "amplicon": {
+  "short": "通过引物提取扩增子（或其周围的指定区域）"
+ },
+ "bam": {
+  "short": "监控 BAM 记录特征并实时绘制直方图"
+ },
+ "common": {
+  "short": "按 id/name/序列查找多个文件的共有/共享序列"
+ },
+ "concat": {
+  "short": "拼接多个文件中相同 ID 的序列"
+ },
+ "convert": {
+  "short": "在 Sanger、Solexa 和 Illumina 之间转换 FASTQ 质量值编码"
+ },
+ "duplicate": {
+  "short": "将序列复制 N 次"
+ },
+ "fa2fq": {
+  "short": "根据 FASTA 文件检索对应的 FASTQ 记录"
+ },
+ "faidx": {
+  "short": "创建 FASTA 索引文件并提取子序列"
+ },
+ "fish": {
+  "short": "使用局部比对在较长序列中查找较短序列"
+ },
+ "fq2fa": {
+  "short": "将 FASTQ 转换为 FASTA"
+ },
+ "fx2tab": {
+  "short": "将 FASTA/Q 转换为表格格式（含长度、GC 含量、平均质量值等）"
+ },
+ "genautocomplete": {
+  "short": "生成 shell 自动补全脚本（bash|zsh|fish|powershell）"
+ },
+ "grep": {
+  "short": "按 ID/name/序列/序列 motif 搜索序列，允许错配"
+ },
+ "head": {
+  "short": "打印前 N 条 FASTA/Q 记录，或总长度 >= L 的前导记录"
+ },
+ "head-genome": {
+  "short": "打印名称共享相同前缀的第一条基因组的序列"
+ },
+ "locate": {
+  "short": "定位子序列/motif，允许错配"
+ },
+ "merge-slides": {
+  "short": "合并 seqkit sliding 生成的滑动窗口"
+ },
+ "mutate": {
+  "short": "编辑序列（点突变、插入、缺失）"
+ },
+ "pair": {
+  "short": "匹配两个 fastq 文件中的双端测序 reads"
+ },
+ "range": {
+  "short": "打印指定范围（start:end）内的 FASTA/Q 记录"
+ },
+ "rename": {
+  "short": "重命名重复 ID"
+ },
+ "replace": {
+  "short": "使用正则表达式替换 name/序列"
+ },
+ "restart": {
+  "short": "重置环状基因组的起始位置（旋转）"
+ },
+ "rmdup": {
+  "short": "按 ID/name/序列去除重复序列"
+ },
+ "sample": {
+  "short": "按数目或比例抽取序列"
+ },
+ "sample2": {
+  "short": "按数目或比例抽取序列（version 2）"
+ },
+ "sana": {
+  "short": "修复损坏的单行 FASTQ 文件"
+ },
+ "scat": {
+  "short": "实时递归拼接并流式输出 fastx 文件"
+ },
+ "seq": {
+  "short": "转换序列（提取 ID、按长度过滤、去除 gap、反向互补等）"
+ },
+ "shuffle": {
+  "short": "打乱序列顺序"
+ },
+ "sliding": {
+  "short": "按滑动窗口提取子序列"
+ },
+ "sort": {
+  "short": "按 id/name/序列/长度排序"
+ },
+ "split": {
+  "short": "按 id/序列区域/大小/份数将序列拆分为文件（主要用于 FASTA）"
+ },
+ "split2": {
+  "short": "按大小/份数将序列拆分为文件（FASTA、PE/SE FASTQ）"
+ },
+ "stats": {
+  "short": "FASTA/Q 文件的简易统计"
+ },
+ "subseq": {
+  "short": "按区域/gtf/bed 获取子序列，包含侧翼序列"
+ },
+ "sum": {
+  "short": "计算 FASTA/Q 文件中所有序列的摘要"
+ },
+ "tab2fx": {
+  "short": "将表格格式转换为 FASTA/Q 格式"
+ },
+ "translate": {
+  "short": "将 DNA/RNA 翻译为蛋白质序列（支持简并碱基）"
+ },
+ "version": {
+  "short": "打印版本信息并检查更新"
+ },
+ "watch": {
+  "short": "监控序列特征并实时绘制直方图"
+ },
+ "group:basic": {
+  "short": "基础操作命令："
+ },
+ "group:format": {
+  "short": "格式转换命令："
+ },
+ "group:search": {
+  "short": "搜索命令："
+ },
+ "group:set": {
+  "short": "集合操作命令："
+ },
+ "group:edit": {
+  "short": "编辑命令："
+ },
+ "group:order": {
+  "short": "排序命令："
+ },
+ "group:bam": {
+  "short": "BAM 处理命令："
+ },
+ "group:misc": {
+  "short": "杂项命令："
+ }
+}

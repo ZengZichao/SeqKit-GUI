@@ -1,0 +1,20 @@
+# Runtime dependencies for SeqKit GUI.
+# The GUI is only a shell around the external seqkit executable, so the single
+# Python requirement is the Qt binding. Install with:
+#     python -m pip install -r requirements.txt
+
+PySide6>=6.6,<7
+
+# ---------------------------------------------------------------------------
+# Optional development tooling (NOT needed to run the app, kept commented so
+# that `pip install -r requirements.txt` stays a runtime-only install).
+# ---------------------------------------------------------------------------
+# PyInstaller, used with packaging/seqkit_gui.spec to build the onedir bundle:
+# pyinstaller>=6.0
+# Test runner for the tests/ directory:
+# pytest>=8.0
+# PyYAML, used by the workflow checks in tests/test_release_consistency.py:
+# pyyaml>=6.0
+# tomli, the pre-3.11 stand-in for the stdlib tomllib that tools/license_check.py reads
+# pyproject.toml with (an interpreter from 3.11 up needs nothing here):
+# tomli>=1.1.0; python_version < "3.11"

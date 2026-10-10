@@ -1,0 +1,8 @@
+>seq1 The first example sequence
+ATGAAAGCAGGGCTGTAA
+>seq2 The second one, longer
+ATGAAGCTTGCGGAATACGCCTAAGGCCATGCTTAG
+>seq3 With a duplicate-ish tail
+ATGAAAGCAGGGCTGTAA
+>seq4 gap and lowercase test
+atgAAA---ggcGGGctgtaa

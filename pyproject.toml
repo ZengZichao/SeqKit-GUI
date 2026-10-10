@@ -1,0 +1,63 @@
+# SeqKit GUI -- unofficial desktop shell for the SeqKit command-line toolkit.
+#
+# The application runs straight from the source tree (`python -m seqkit_gui`), and a
+# bundle is built with `pyinstaller packaging/seqkit_gui.spec`; the metadata below is
+# what additionally makes `pip install .` and `pip install -e .` work, which is how a
+# user on a machine with no compiler gets the app onto PATH.
+
+[build-system]
+# ``>=61`` is the first setuptools that reads PEP 621 ``[project]`` metadata at all; the
+# license below stays in the table form so this floor is not pushed to 77 (see the note
+# there). Declaring a backend explicitly is what lets ``--no-build-isolation`` and the
+# offline builds work off the setuptools that is already installed.
+requires = ["setuptools>=61", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "seqkit-gui"
+version = "1.0.0"
+description = "Unofficial cross-platform-in-mind, Windows-first desktop GUI shell for the SeqKit command-line toolkit"
+readme = "README.md"
+requires-python = ">=3.10"
+# Deliberately the PEP 621 *table* form, not the PEP 639 SPDX string ``license = "MIT"``.
+# The string form is only understood by setuptools >= 77; on the interpreter and build
+# frontend this project is developed and packaged with (setuptools 68.2.2) it fails
+# metadata preparation outright with
+#   configuration error: `project.license` must be valid exactly by one definition
+# which takes `pip install .`, `pip install -e .` and any build that reads the metadata
+# down with it. The table form works on both halves of that version range; the SPDX
+# string, and dropping the now-redundant ``License ::`` classifier below, is the change
+# to make when the minimum build frontend is raised to setuptools >= 77.
+license = { text = "MIT" }
+keywords = ["seqkit", "bioinformatics", "fasta", "fastq", "gui", "pyside6"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Environment :: Win32 (MS Windows)",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3 :: Only",
+    "Topic :: Scientific/Engineering :: Bio-Informatics",
+]
+dependencies = ["PySide6>=6.6,<7"]
+
+# No [project.urls]: the repository has no published home page yet.
+
+[tool.setuptools.packages.find]
+# The repository is a flat layout whose top level also holds `bin/`, `docs/`,
+# `packaging/`, `tests/` and `tools/`. Automatic discovery refuses to guess there --
+# it aborts with "Multiple top-level packages discovered in a flat-layout" -- so the
+# one importable distribution package is named here instead.
+include = ["seqkit_gui*"]
+
+[tool.setuptools.package-data]
+# `data/commands.json` and `i18n/*.json` are read from inside the package directory at
+# runtime (core/spec.py and ui/i18n.py), `assets/` holds the window and bundle icon the
+# About box and the taskbar ask for, and none of those folders is a Python package, so
+# they travel only as declared package data. Without these globs an installed copy starts
+# and then reports an empty command catalogue and a default icon.
+seqkit_gui = ["data/*.json", "i18n/*.json", "assets/*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

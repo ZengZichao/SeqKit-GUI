@@ -1,0 +1,260 @@
+name: "Bug 报告 / Bug report"
+description: "界面行为与预期不符：无法启动、找不到 seqkit、参数显示或组装不对、运行失败、输出显示异常"
+title: "[Bug] "
+labels:
+  - bug
+body:
+  - type: markdown
+    attributes:
+      value: >
+        SeqKit GUI 是**非官方**项目：界面只组装参数并调用官方 `seqkit` 可执行文件，本身不做任何序列计算。
+
+        - seqkit 命令自身的速度或结果问题：请到上游 <https://github.com/shenwei356/seqkit/issues>。
+
+        - 界面显示的参数与你的 seqkit 版本对不上（缺项、多项、默认值不同）：请改用 **参数表不一致 / Spec mismatch** 模板。
+
+        - 下面每一项都写明了取值命令或界面位置。请粘贴**完整原文**，只有一句「不工作」的 issue 通常需要来回追问才能定位，处理会慢很多。中文或英文描述都可以。
+  - type: input
+    id: summary
+    attributes:
+      label: "问题概述 / Summary"
+      description: "一句话说清现象，例如「点击运行后进程没有启动，右下角提示 Failed to start」"
+      placeholder: "问题的一句话描述"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: area
+    attributes:
+      label: "问题类别 / Area"
+      description: "选择最接近的一项，不确定就选「其他 / 不确定」"
+      options:
+        - "启动与依赖（打开即报错、无法启动、缺 PySide6）"
+        - "找不到 seqkit / 可执行文件路径"
+        - "参数表单（参数显示、默认值、必填判定、枚举候选）"
+        - "命令组装（「命令行」标签里拼出的参数不对）"
+        - "运行与输出（进程启动、停止、结果/错误/日志视图、编码、大文件）"
+        - "文件读写（输入文件、输出文件、工作目录、路径含空格或中文）"
+        - "界面外观（语言、主题、布局、字号、图标）"
+        - "打包版（dist/SeqKit-GUI/SeqKit-GUI.exe）"
+        - "其他 / 不确定"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: run-form
+    attributes:
+      label: "运行形式 / How you run it"
+      options:
+        - "源码运行（python -m seqkit_gui 或 run.bat / run.sh）"
+        - "打包版（dist 目录中的 SeqKit-GUI.exe）"
+        - "不确定"
+    validations:
+      required: true
+
+  - type: markdown
+    attributes:
+      value: >
+        #### 环境信息 / Environment
+
+        每一项请按 description 里的命令或界面位置取好后**原样粘贴**，不要凭记忆概写。这些数字会直接决定排查方向。
+  - type: dropdown
+    id: os
+    attributes:
+      label: "操作系统 / Operating system"
+      description: "界面主要在 Windows x64 上实测过；其他平台选好后请在下一项补充版本，并在「实际结果」里说明该平台的特有表现"
+      options:
+        - "Windows 11"
+        - "Windows 10"
+        - "Windows 其他版本"
+        - "macOS"
+        - "Linux（发行版写在下一项）"
+        - "其他 / 未知"
+    validations:
+      required: true
+
+  - type: input
+    id: os-version
+    attributes:
+      label: "操作系统版本与架构 / OS version and architecture"
+      description: >
+        Windows：按 `Win+R`，输入 `winver`，把弹出的版本号抄过来（例如 `23H2 Build 22631.4317`）。
+        macOS：菜单 →「关于本机」。Linux：`uname -sr`。
+      placeholder: "Windows 11 23H2 (Build 22631.4317), x64"
+    validations:
+      required: true
+
+  - type: input
+    id: python-version
+    attributes:
+      label: "Python 版本 / Python version"
+      description: >
+        运行 `python -V` 并粘贴输出。Windows 上装了多个 Python 时，请用 `run.bat` 实际会命中的那个解释器（例如 `py -3.10 -V`）。
+        只用打包版的话填「不适用」。
+      placeholder: "Python 3.10.11"
+    validations:
+      required: true
+
+  - type: input
+    id: pyside6-version
+    attributes:
+      label: "PySide6 版本 / PySide6 version"
+      description: >
+        运行 `python -c "import PySide6; print(PySide6.__version__)"` 并粘贴输出。
+        只用打包版的话填「不适用」。
+      placeholder: "6.9.1"
+    validations:
+      required: true
+
+  - type: input
+    id: seqkit-version
+    attributes:
+      label: "seqkit 版本 / seqkit version"
+      description: >
+        运行 `seqkit version` 并粘贴完整输出。本项目的参数表由 seqkit 2.14.0 源码生成；
+        如果你用的是别的版本、且现象主要是参数表对不上，请改用 **参数表不一致 / Spec mismatch** 模板。
+        PATH 里有多份 seqkit 时，请用下一项那个路径对应的可执行文件来跑这条命令。
+      placeholder: "seqkit v2.14.0"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: seqkit-source
+    attributes:
+      label: "seqkit 是被哪一种方式找到的 / How seqkit was located"
+      description: "看界面底部状态栏左侧，格式为 `<完整路径>  (来源)`，括号里的就是这个下拉框的取值"
+      options:
+        - "configured（在「工具 → 设置」里手动指定的路径）"
+        - "bundled（项目或打包目录下的 bin/ 文件夹）"
+        - "path（系统 PATH 里找到的）"
+        - "not-found（状态栏显示「未找到 seqkit」）"
+        - "不确定 / 看不到状态栏"
+    validations:
+      required: true
+
+  - type: input
+    id: seqkit-path
+    attributes:
+      label: "seqkit 可执行文件完整路径 / seqkit executable path"
+      description: >
+        两个地方都能看到：① 界面底部状态栏左侧的 `<路径>  (来源)`；② 「工具 → 设置」（`Ctrl+,`）里「SeqKit 可执行文件」输入框。
+        路径里含你的用户名，是否删减由你决定，但请保留足以判断来源的那部分。
+      placeholder: "D:\\tools\\bin\\seqkit.exe"
+    validations:
+      required: true
+
+  - type: textarea
+    id: argv
+    attributes:
+      label: "界面「命令行」标签里的原文（组装出的完整命令）/ Contents of the Command tab"
+      description: >
+        **这是定位问题最关键的一项。** 三个位置任选其一，整行粘贴：
+
+        ① 输出面板第 4 个标签「命令行」（英文界面为 "Command"）—— 每次点「运行」后填入本次实际执行的命令；
+
+        ② 状态栏**右侧**的实时预览 —— 还没运行时也能看到当前表单组装出的命令；
+
+        ③ 「工具 → 复制完整命令」（`Ctrl+Shift+C`）—— 它复制的就是「命令行」标签的内容，粘到这里即可。
+
+        注意：输出面板按钮栏里的「复制结果」按钮复制的是「结果」标签，不是命令行。
+
+        ⚠️ 这一行会包含输入文件和 seqkit 的绝对路径，因此**会带上你的用户名**。是否删减由你决定；
+        若要删减，请保留路径结构（例如改成 `C:\Users\<you>\data\sample.fastq`），因为路径里的空格与中文本身就是常见故障源。
+      placeholder: |
+        "D:\tools\bin\seqkit.exe" stats -a -j "D:\data\sample 1.fastq" -o stats.tsv
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: "复现步骤 / Steps to reproduce"
+      description: >
+        写清界面里的操作路径，从「左侧哪个分组下的哪个命令」开始逐步编号（1、2、3…）。
+        同时给出所用测试文件的最小特征（格式、条数、是否压缩、路径是否含空格或中文）。
+      placeholder: |
+        1. 左侧选「搜索命令」分组下的 grep
+        2. 输入文件添加 2 个 .fastq（每个约 10k 条序列）
+        3. 勾选 --only-matching，模式串输入 NNNNN
+        4. 点「运行」
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: "期望结果 / Expected behavior"
+      description: "你期望界面或 seqkit 输出什么。如果是命令组装问题，写出你认为正确的命令行。"
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual
+    attributes:
+      label: "实际结果 / Actual behavior"
+      description: >
+        包括界面提示原文、状态栏文字，以及「错误 / Errors」和「日志 / Log」标签的完整内容。
+        失败时状态栏形如 `失败 · 退出码 2 · 耗时 0.05s · 输出 0B`，请把这几个数字也带上。
+      placeholder: |
+        状态栏显示：失败 · 退出码 2 · 耗时 0.05s · 输出 0B
+        「错误」标签内容：
+        [paste stderr here]
+    validations:
+      required: true
+
+  - type: textarea
+    id: terminal-check
+    attributes:
+      label: "同样的命令在终端里直接跑的结果 / The same command run in a terminal"
+      description: >
+        把上面「命令行」那一行整行复制到终端执行（Windows 用 PowerShell 或 cmd），粘贴命令与输出。
+        这一步能一次性区分「界面组装错了」和「seqkit 本身就这样」。程序路径含空格时保留外层引号。
+      placeholder: |
+        PS D:\data> "D:\tools\bin\seqkit.exe" stats -a -j "D:\data\sample 1.fastq" -o stats.tsv
+        [paste output]
+    validations:
+      required: false
+
+  - type: dropdown
+    id: data-shareable
+    attributes:
+      label: "输入数据可公开性 / Is the input data shareable?"
+      options:
+        - "可以公开，我能上传脱敏后的最小样例文件"
+        - "不能公开（含受试者/项目数据），只能描述格式与规模"
+        - "用仓库 tests/data/ 里的样例或自建公开样例就能复现"
+        - "还没试过最小化复现"
+    validations:
+      required: true
+
+  - type: textarea
+    id: data-detail
+    attributes:
+      label: "输入数据描述 / About the input data"
+      description: >
+        文件数量、FASTA 还是 FASTQ、是否 .gz/.bz2/.xz/.zst 压缩、序列条数与长度量级、
+        序列 ID 风格、是否多行序列、文件编码、路径是否含空格或中文。
+      placeholder: "3 个 .fastq.gz，各约 50 万条 150bp；ID 形如 @SRR123456.1/1；其中一个路径含空格"
+    validations:
+      required: false
+
+  - type: checkboxes
+    id: extras
+    attributes:
+      label: "补充信息 / Additional checks"
+      description: "勾选符合的项；有截图或录屏请直接拖进附件区（截图请包含整窗：左侧命令树、参数表单、输出面板、底部状态栏）"
+      options:
+        - label: "我已附上整窗截图或录屏（含左侧命令树、参数表单、底部状态栏）"
+          required: false
+        - label: "切换界面语言（顶栏「语言」选择器，或设置对话框里的 Language）后问题依旧"
+          required: false
+        - label: "问题在英文界面下也能复现"
+          required: false
+        - label: "我已按 docs/zh/faq.md（或 docs/en/faq.md）的排查顺序自查过"
+          required: false
+        - label: "换了 seqkit 版本后现象变化（若主要是参数表对不上，请改用 Spec mismatch 模板）"
+          required: false
+        - label: "同一条命令行在终端里能成功，只有界面里失败"
+          required: false
+        - label: "只在打包版（dist 目录）里出现，源码运行正常"
+          required: false

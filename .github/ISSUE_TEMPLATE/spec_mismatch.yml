@@ -1,0 +1,255 @@
+name: "参数表不一致 / Spec mismatch"
+description: "界面显示的参数与你本机 seqkit 的 --help 对不上：缺项、多项、默认值不同、类型或必填判定不对"
+title: "[Spec mismatch] "
+labels:
+  - bug
+  - spec-mismatch
+body:
+  - type: markdown
+    attributes:
+      value: >
+        这个模板用于「**界面里的参数与 seqkit 实际支持的参数不一致**」。这类问题的根因几乎总是数据而不是代码：
+        `seqkit_gui/data/commands.json` 是一份**生成出来的参数表**，由 `tools/spec-dumper`（Go）遍历 seqkit
+        2.14.0 源码的 cobra 命令树导出，再由 `tools/extract_spec.py` 整理成界面用的形式。
+        它描述的是 **2.14.0**，不会随你安装的 seqkit 变化。
+
+        所以最先要确认的是版本：
+
+        - 顶栏 `SeqKit x.y.z` 徽标显示检测到的版本，悬停显示所用可执行文件的完整路径。
+
+        - 当检测到的版本与参数表版本不一致时，顶栏会出现橙色的「版本不匹配」徽标，悬停说明形如
+          「参数表由 SeqKit 2.14.0 源码生成，检测到的版本为 2.15.0，参数可能不完全一致。」
+
+        - 状态栏**右侧**平时显示 `41 个命令 · Schema 2.14.0`，这里的 `41` 和 `Schema` 版本就是参数表的口径。
+
+        如果你的 seqkit 不是 2.14.0，这本身就是解释 —— 填完下面的版本号即可，维护者会先回答「换 2.14.0 还是重新生成参数表」。
+        如果你的 seqkit 就是 2.14.0 却仍然对不上，那才是真正的生成缺陷，请务必填全「官方 `--help` 原文」和「commands.json 条目」两项。
+
+        seqkit 命令本身的行为问题（速度、结果、报错）请去上游 <https://github.com/shenwei356/seqkit/issues>，不要用这个模板。
+  - type: input
+    id: summary
+    attributes:
+      label: "不一致概述 / Summary"
+      description: "一句话说清哪个命令的哪个参数对不上，例如「stats 界面里没有 --min-n50 这个参数」"
+      placeholder: "命令 + 参数 + 差异方向"
+    validations:
+      required: true
+
+  - type: input
+    id: seqkit-version
+    attributes:
+      label: "你的 seqkit 版本 / Your seqkit version"
+      description: >
+        运行 `seqkit version` 并粘贴**完整输出**（不要只写数字）。
+        请用界面实际使用的那个可执行文件来跑 —— 路径见顶栏徽标悬停提示或状态栏左侧。
+      placeholder: |
+        seqkit v2.14.0
+        https://github.com/shenwei356/seqkit
+        Build:  ...
+    validations:
+      required: true
+
+  - type: dropdown
+    id: mismatch-kind
+    attributes:
+      label: "差异类型 / Kind of mismatch"
+      description: "选择最符合的一项，可在下面「界面显示 vs 官方 --help」里补充细节"
+      options:
+        - "界面缺少参数（--help 里有，界面里没有）"
+        - "界面多出参数（界面里有，--help 里没有）"
+        - "参数名或短选项不同"
+        - "默认值不同（参数行右上「默认值: …」与 --help 里的 default 不一致）"
+        - "类型或控件不对（该是下拉的成了文本框、该可重复的成了单值、布尔被当成带值参数等）"
+        - "枚举候选不对（下拉框里的取值与 --help 括号里列出的不一致）"
+        - "必填判定不对（「注意事项」区或「必填」红标与 seqkit 实际要求不符）"
+        - "输入文件契约不对（能不能用 stdin、能不能传多个文件、是否接受位置参数）"
+        - "整个命令缺失、新增、改名或被标记为 hidden"
+        - "命令分组归属不对（左侧分组放错）"
+        - "说明文字 / usage 原文不一致"
+        - "顶栏显示「版本不匹配」，但我不确定差异具体在哪"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: os
+    attributes:
+      label: "操作系统 / Operating system"
+      options:
+        - "Windows 11"
+        - "Windows 10"
+        - "Windows 其他版本"
+        - "macOS"
+        - "Linux"
+        - "其他 / 未知"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: command
+    attributes:
+      label: "哪个子命令 / Which subcommand"
+      description: "取值为左侧命令树里的命令名；参数表当前共 41 个命令"
+      options:
+        - amplicon
+        - bam
+        - common
+        - concat
+        - convert
+        - duplicate
+        - fa2fq
+        - faidx
+        - fish
+        - fq2fa
+        - fx2tab
+        - genautocomplete
+        - grep
+        - head
+        - head-genome
+        - locate
+        - merge-slides
+        - mutate
+        - pair
+        - range
+        - rename
+        - replace
+        - restart
+        - rmdup
+        - sample
+        - sample2
+        - sana
+        - scat
+        - seq
+        - shuffle
+        - sliding
+        - sort
+        - split
+        - split2
+        - stats
+        - subseq
+        - sum
+        - tab2fx
+        - translate
+        - version
+        - watch
+        - "上面的列表里没有（参数表缺了这个命令）"
+    validations:
+      required: true
+
+  - type: textarea
+    id: gui-display
+    attributes:
+      label: "界面里显示的内容 / What the GUI shows"
+      description: >
+        把出问题的那一行参数原样抄下来，参数行包含这几处信息：勾选框 + `--长名`、灰色短选项、
+        是否标注「必填」、右上「默认值: …」、控件类型、下方说明文字。
+        鼠标悬停在该参数行上还会显示 `-p, --pattern` / `type: stringSlice` / `default: (空)` / 英文 usage，
+        请把 `type` 和 `default` 一起抄上 —— 这是判断生成环节哪一步出错的关键。多个参数就逐行列。
+      placeholder: |
+        --tabular   -t     默认值: (空)   控件：单行文本框
+        悬停：type: stringSlice / default: []
+        usage: output in tabular form, given the desired fields, comma-separated.
+    validations:
+      required: true
+
+  - type: textarea
+    id: upstream-help
+    attributes:
+      label: "官方 --help 原文 / The official --help output"
+      description: >
+        运行 `seqkit <子命令> --help`（例如 `seqkit stats --help`），粘贴**完整输出**，不要节选、不要手工改写。
+        这一项让维护者不必装你的 seqkit 版本就能对照。请用界面实际使用的那个可执行文件跑，
+        路径含空格时用引号包住（`"D:\tools\bin\seqkit.exe" stats --help`）。
+      placeholder: |
+        $ seqkit stats --help
+        summarize of FASTA/Q
+        Usage:
+          seqkit stats [flags] file...
+        Flags:
+          -a, --all ...
+      render: shell
+    validations:
+      required: true
+
+  - type: textarea
+    id: commands-json-entry
+    attributes:
+      label: "参数表里该命令的条目 / The commands.json entry for that command"
+      description: >
+        这是维护者重跑 `tools/spec-dumper` + `tools/extract_spec.py` 时最需要的东西 —— 有了它可以直接 diff 出生成结果与实物的差异。
+        参数表文件位置二选一：源码目录 `seqkit_gui/data/commands.json`；打包版
+        `dist/SeqKit-GUI/_internal/seqkit_gui/data/commands.json`。
+
+        在项目根目录（或 `dist` 的上一级）用 PowerShell / cmd 运行下面这条命令，把 `<命令名>` 换成上一步选的名字，输出整段粘贴：
+
+        ```
+        python -c "import json; d=json.load(open('seqkit_gui/data/commands.json',encoding='utf-8')); print(d['seqkit_version']); print(json.dumps([c for c in d['commands'] if c['name']=='<命令名>'], ensure_ascii=False, indent=2))"
+        ```
+
+        打包版把路径换成 `dist/SeqKit-GUI/_internal/seqkit_gui/data/commands.json`。
+        这个文件接近 400 KB，请**只粘贴上面命令的输出**（单个命令的条目），不要整个文件。
+        上一步选了「列表里没有」的话，粘贴输出里 `commands` 数组中所有 `name` 的列表即可。
+      placeholder: |
+        2.14.0
+        [ { "path": ["seqkit", "stats"], "name": "stats", ... } ]
+      render: json
+    validations:
+      required: true
+
+  - type: textarea
+    id: assembled-command
+    attributes:
+      label: "组装出的命令行（可选）/ The assembled command line (optional)"
+      description: >
+        如果这个不一致已经影响到实际执行的命令行，请附上「命令行」标签里的原文
+        （`Ctrl+Shift+C` 复制，或看状态栏右侧实时预览）。
+        ⚠️ 这行会包含输入文件与 seqkit 的绝对路径，**因此带上你的用户名**；是否删减由你决定，
+        若要删减请保留路径结构。
+      placeholder: |
+        "D:\tools\bin\seqkit.exe" stats -a -j "D:\data\sample 1.fastq" -o stats.tsv
+    validations:
+      required: false
+
+  - type: dropdown
+    id: consequence
+    attributes:
+      label: "造成的后果 / What actually breaks"
+      options:
+        - "只是显示不一致，运行结果仍然正确"
+        - "界面漏掉的参数我没法从界面传，只能退回终端"
+        - "界面传了 seqkit 不认识的参数，运行报错"
+        - "默认值显示不对，导致我以为是某个行为而实际不是"
+        - "必填判定不对：界面放行但 seqkit 报错，或界面拦住但 seqkit 其实能跑"
+        - "还没确认到这一步"
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: "提交前确认 / Before submitting"
+      options:
+        - label: "我确认 `seqkit version` 的输出与界面实际调用的那个可执行文件一致（顶栏徽标悬停可看路径）"
+          required: false
+        - label: "我已按 docs/zh/faq.md 的「版本不匹配」一节（或 docs/en/faq.md）自查过"
+          required: false
+        - label: "我已确认这不是我自己改了 `seqkit_gui/data/commands.json`（该文件由生成脚本产出，不应手工编辑）"
+          required: false
+        - label: "我知道修复需要重新生成参数表（Go + seqkit 源码），短期方案是改用 seqkit 2.14.0"
+          required: false
+
+  - type: markdown
+    attributes:
+      value: >
+        ---
+
+        维护者复现路径（供参考，无需填写）：
+
+        ```bash
+        # 需要 Go 与一份对应版本的 seqkit 源码目录
+        python tools/extract_spec.py --build --seqkit-src ../../../seqkit-2.14.0
+        # 只重放已缓存的原始导出（tools/_build/spec_raw.json），不需要 Go
+        python tools/extract_spec.py
+        ```
+
+        参数表更新后需同步 `seqkit_gui/__init__.py` 里的 `SEQKIT_SUPPORTED_VERSION`，
+        并核对 `tools/extract_spec.py` 的 `CONTRACTS` 表是否还匹配新版本的 `Run` 函数。

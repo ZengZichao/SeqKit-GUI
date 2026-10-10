@@ -1,0 +1,131 @@
+# ---------------------------------------------------------------------------
+# Python
+# ---------------------------------------------------------------------------
+__pycache__/
+*.pyc
+*.py[cod]
+.pytest_cache/
+build/
+dist/
+*.egg-info/
+.venv/
+venv/
+
+# ---------------------------------------------------------------------------
+# PySide6 / Qt caches and generated bindings
+#   (pyside6-uic / pyside6-rcc output and Qt Designer / Qt Creator leftovers;
+#    the app builds its UI in code, so none of these are source files.
+#    WARNING: *_ui.py and *_rc.py match by SUFFIX, so a hand-written module must
+#    never be named e.g. preview_ui.py -- git would hide it silently.)
+# ---------------------------------------------------------------------------
+qmlcache/
+*.qmlc
+*_ui.py
+*_rc.py
+*.ui.autosave
+*.qrc.autosave
+*.pro.user
+*.pro.user.*
+.qmake.stash
+
+# ---------------------------------------------------------------------------
+# IDE and editor leftovers
+# ---------------------------------------------------------------------------
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# ---------------------------------------------------------------------------
+# OS
+# ---------------------------------------------------------------------------
+.DS_Store
+._*
+Thumbs.db
+Desktop.ini
+
+# ---------------------------------------------------------------------------
+# Project artifacts
+# ---------------------------------------------------------------------------
+# bin/ holds the SeqKit executable. SeqKit is upstream MIT software owned by
+# Wei Shen and is NOT redistributed from this repository: it is ~28 MB and the
+# GUI finds it at run time from the configured path, bin/seqkit.exe next to the
+# app, or PATH. Users supply it themselves -- either by dropping the binary in
+# bin/ or by downloading it with: python tools/fetch_seqkit.py
+bin/
+SeqKit-GUI.exe
+# The one exception: the self-contained onefile build ships at the repository
+# root so a downloader gets a runnable exe directly (built with
+# SEQKIT_GUI_BUNDLE=onefile; the seqkit binary itself is still never included).
+!/SeqKit-GUI.exe
+*.spec.bak
+# Intermediate output of tools/spec-dumper (raw JSON dump, worklists); the
+# checked-in result is seqkit_gui/data/commands.json.
+tools/_build/
+
+# ---------------------------------------------------------------------------
+# Test coverage and static-analysis caches
+#   (pytest-cov / ruff / mypy output; none of these are source files)
+# ---------------------------------------------------------------------------
+.coverage
+.coverage.*
+htmlcov/
+coverage.xml
+.ruff_cache/
+.mypy_cache/
+.pytype/
+
+# ---------------------------------------------------------------------------
+# Local environment files
+#   .env files are where a developer stashes a token or a proxy credential, so
+#   they must never be committable by accident. The negations below keep
+#   value-free templates (.env.example) visible so a contributor can check in
+#   one without fighting .gitignore.
+# ---------------------------------------------------------------------------
+.env
+.env.*
+!.env.example
+!.env.sample
+!.env.template
+
+# ---------------------------------------------------------------------------
+# Logs and merge leftovers
+# ---------------------------------------------------------------------------
+*.log
+logs/
+*.orig
+*.rej
+
+# ---------------------------------------------------------------------------
+# Scratch directories and tool metadata
+#   /out/ is root-anchored on purpose: a directory named "out" deeper in the
+#   tree may hold real data and should still show up in git status.
+#   tmp/, temp/ and logs/ are deliberately NOT anchored -- test and build
+#   scratch space can appear at any level, and an accidentally committed
+#   scratch directory is the worse failure mode.
+# ---------------------------------------------------------------------------
+/out/
+tmp/
+temp/
+.qoder/
+
+# ---------------------------------------------------------------------------
+# Deliberately NOT ignored -- keep this list honest before adding a rule
+#   *.fa *.fq *.fasta *.fastq *.gz *.zip : plausible future test fixtures
+#     (tests/data/ holds short1.fa, short2.fa, reads.fq); a wildcard here would
+#     silently swallow a teammate's new fixture. Output belongs in /out/ or the
+#     system temp dir, which the rules above already cover.
+#   *.spec : packaging/seqkit_gui.spec is a checked-in source file.
+#   uv.lock / poetry.lock / Pipfile.lock : this is an application, so a lock
+#     file is something we may WANT to commit for reproducible CI builds.
+#   *.local.md : handled by a machine-local global gitignore, not by this file;
+#     adding it here would hide a deliberately shared note from other clones.
+# ---------------------------------------------------------------------------
+
+# 发布前检查表是本地工作文档，里面写了本机的绝对路径，不入库
+/PRE_RELEASE_CHECKLIST.md
+
+# 本机 AI 工具链的工作状态，与项目无关，不入库
+.mimosa/
+.zcodeignore

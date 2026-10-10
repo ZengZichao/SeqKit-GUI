@@ -1,0 +1,273 @@
+name: CI
+
+# Test the application on every platform it claims to care about.
+#
+#   * 3 operating systems x 3 Python versions, no fail-fast: one platform's
+#     problem must not hide the other eight results.
+#   * Two jobs: `consistency` (a few seconds, the version/name/workflow-file
+#     invariants, the check a reviewer most often wants to see green) and `test`
+#     (the full suite against a real seqkit binary).
+#   * Nothing here builds a PyInstaller bundle and nothing here publishes: the
+#     bundle is produced by release-build.yml on a tag.
+#
+# This workflow only reads the repository. It needs no secrets and no write
+# permission, so `permissions` is pinned to `contents: read` once at the
+# workflow level, which is what every job here inherits (GitHub applies the
+# workflow-level grant to jobs that declare none). No job overrides it: an
+# override is what turns a read-only workflow into a writable one by accident.
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+      - master
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.event_name }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  # Qt has no display server on a runner. The offscreen platform is enough for
+  # the widget tree assertions; see the note on screenshots below.
+  QT_QPA_PLATFORM: offscreen
+  # tests/test_gui.py::test_screenshots_for_the_docs renders the window to PNG and
+  # needs BOTH gates open: SEQKIT_GUI_SHOOT exactly "1" (the test's own check,
+  # tests/test_gui.py) and the pytest flag --with-screenshots (tests/conftest.py,
+  # which otherwise marks every screenshot test skipped at collection). Neither
+  # gate is opened by any job in either workflow of this repository: the images
+  # are documentation assets, offscreen Qt on a runner without a font database
+  # renders them as tofu, and `docs/screenshots/` is refreshed by
+  # `python tools/_build/shoot.py` on the real desktop instead. So these tests are
+  # reported as skipped here, never as passed -- `-rs` prints the reason.
+  SEQKIT_GUI_SHOOT: "0"
+
+
+jobs:
+  consistency:
+    name: consistency
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Set up Python
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          # Any supported interpreter does; this job reads files as text.
+          python-version: '3.12'
+
+      - name: Install the tools these checks need
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install "pytest>=8.0" "PyYAML>=6.0"
+        # PyYAML parses .github/workflows/*.yml in the same test file that the
+        # release job relies on. It is a CI-side tool only; the app itself never
+        # imports it (see requirements.txt, which stays runtime-only).
+
+      - name: Reconcile the version and name declarations
+        run: python packaging/check_version.py
+
+      - name: Run the release-consistency tests
+        run: python -m pytest tests/test_release_consistency.py -q -rs
+
+  test:
+    name: 'test (${{ matrix.os }} / Python ${{ matrix.python-version }})'
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-latest, macos-latest, ubuntu-latest]
+        # 3.10 is the version the project declares as its floor; 3.12 is the
+        # newest it claims to work on. If a runner image ever drops 3.10 from
+        # its tool cache, that matrix entry fails with a setup-python error --
+        # a signal to retire the entry deliberately, not a silent skip.
+        python-version: ['3.10', '3.11', '3.12']
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Set up Python
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: pip
+          cache-dependency-path: requirements.txt
+
+      - name: Install the system libraries Qt needs without a display server
+        if: matrix.os == 'ubuntu-latest'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            libegl1 libgl1 libxkbcommon0 libxkbcommon-x11-0 libdbus-1-3 \
+            libfontconfig1 fonts-dejavu-core
+          # The GLib package was renamed on Ubuntu 24.04; try both names so the
+          # step keeps working on older and newer runner images alike.
+          sudo apt-get install -y --no-install-recommends libglib2.0-0t64 \
+            || sudo apt-get install -y --no-install-recommends libglib2.0-0
+          fc-list | head -3 || true
+
+      - name: Install runtime and test dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -r requirements.txt
+          # pytest is kept out of requirements.txt on purpose (that file is the
+          # runtime install). Align here if a dev extra ever appears.
+          python -m pip install "pytest>=8.0"
+
+      - name: Show the environment that is really being tested
+        run: |
+          python -c "import sys; print('python', sys.version)"
+          python -c "import PySide6.QtCore as q; print('Qt', q.qVersion())"
+          python -m pip list --format=freeze
+
+      - name: Resolve the SeqKit release the parameter schema was generated from
+        id: schema
+        shell: bash
+        run: |
+          # `--get` prints one bare value and only after every declaration in the tree
+          # has been reconciled, so this does not keep its own copy of the regular
+          # expression that guards the value. Without `shell: bash` this line would run
+          # in PowerShell on windows-latest, the redirect would write nothing, and every
+          # Windows job would then fetch seqkit for an empty version -- the quiet kind of
+          # failure that leaves a green run with no real binary behind it.
+          echo "version=$(python packaging/check_version.py --get seqkit-version)" >> "$GITHUB_OUTPUT"
+          # Single source of truth: the CI binary version is read out of the package
+          # rather than duplicated here, so a bump in the source is the only thing that
+          # can move this.
+
+      - name: Fetch the official seqkit binary into bin/
+        id: fetch
+        shell: bash
+        env:
+          # Passed as an environment variable rather than interpolated into the command
+          # text. This value is read out of a file in the checkout, and a pull request
+          # from a fork brings its own copy of that file; pasted into a double-quoted
+          # shell word it would still expand `$(...)`, which is code execution from a PR.
+          SEQKIT_VERSION: ${{ steps.schema.outputs.version }}
+        run: |
+          set -o pipefail
+          status=0
+          python tools/fetch_seqkit.py --version "$SEQKIT_VERSION" --timeout 60 --force \
+            2>&1 | tee fetch-seqkit.log || status=$?
+          # Two very different failures, deliberately treated differently:
+          #   * transport failures -- GitHub did not answer, or refused the URL -- mean
+          #     the runner could not reach upstream. Recorded below; the suite still
+          #     runs and reports what it could. A runner outage is not a regression in
+          #     this repository.
+          #   * everything else means the archive arrived and the bytes were rejected:
+          #     upstream's own .md5.txt did not match (verify_md5), a sha256 the caller
+          #     pinned did not match, the archive held an unexpected member or a link,
+          #     the executable lacked a native image signature, or the URL redirected
+          #     outside GitHub. Those are this project's assumptions about upstream, or
+          #     a supply-chain signal, so the job must go red.
+          # The list below is therefore the narrow transport one: an error this file
+          # does not recognise is treated as an integrity failure, never as a hiccup,
+          # because masking a bad download as "no network" is how a tampered binary
+          # turns into a passing test run.
+          if [ "$status" -ne 0 ] \
+             && ! grep -Eqi '^(error: )?(HTTP [0-9]{3}( for| from)|could not (fetch|download)|network failure)' \
+                  fetch-seqkit.log; then
+            echo "::error::seqkit provisioning failed for a reason other than connectivity; refusing to run the suite as if upstream were simply unreachable"
+            cat fetch-seqkit.log
+            exit "$status"
+          fi
+          if [ "$status" -eq 0 ]; then
+            echo "available=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "available=false" >> "$GITHUB_OUTPUT"
+            cat fetch-seqkit.log
+          fi
+
+      - name: Prove the binary that landed in bin/ is the one the schema describes
+        shell: bash
+        env:
+          SEQKIT_VERSION: ${{ steps.schema.outputs.version }}
+          AVAILABLE: ${{ steps.fetch.outputs.available }}
+        run: |
+          if [ "$AVAILABLE" != "true" ]; then
+            echo "::warning::seqkit could not be downloaded from the official release by this runner; the assertions that need a real binary are deselected and the seqkit-dependent tests report as skipped. See the job summary before reading this row as coverage."
+            exit 0
+          fi
+          python - <<'PY'
+          import pathlib
+          for item in sorted(pathlib.Path("bin").iterdir()):
+              print(f"bin/{item.name}  {item.stat().st_size:,} bytes")
+          PY
+          binary="$(ls bin/seqkit* | head -1)"
+          reported="$("$binary" version | head -n 1)"
+          echo "bin/seqkit reports: $reported"
+          # The version printed by the program itself, not the file name that was
+          # downloaded: this is the only step that says the tests below really ran
+          # against the SeqKit release the parameter table was generated from.
+          case "$reported" in
+            *"$SEQKIT_VERSION"*) ;;
+            *) echo "::error::$reported does not name SeqKit $SEQKIT_VERSION, the version the schema and the interface were built against"; exit 1 ;;
+          esac
+
+      - name: Run the test suite
+        shell: bash
+        env:
+          AVAILABLE: ${{ steps.fetch.outputs.available }}
+        run: |
+          set -o pipefail
+          deselect=()
+          if [ "$AVAILABLE" != "true" ]; then
+            # These two assertions in tests/test_gui.py require bin/seqkit(.exe)
+            # to exist: test_seqkit_binary_is_detected asserts the locator found it
+            # and test_full_run_from_the_window runs `stats` end to end. Without a
+            # binary the first fails and the second would block inside a modal
+            # QMessageBox, so they are dropped when -- and only when -- the
+            # download itself was unreachable. Everything else still runs, and the
+            # suite's own seqkit_binary fixtures skip on their own.
+            deselect=(
+              --deselect tests/test_gui.py::test_seqkit_binary_is_detected
+              --deselect tests/test_gui.py::test_full_run_from_the_window
+            )
+          fi
+          python -m pytest tests -q -rs "${deselect[@]}" | tee pytest.log
+
+      - name: Write the job summary
+        if: always()
+        shell: bash
+        env:
+          SEQKIT_VERSION: ${{ steps.schema.outputs.version }}
+          AVAILABLE: ${{ steps.fetch.outputs.available }}
+        run: |
+          {
+            echo "## Test run: ${{ matrix.os }} / Python ${{ matrix.python-version }}"
+            echo
+            echo "| item | value |"
+            echo "| --- | --- |"
+            echo "| schema version expected | \`$SEQKIT_VERSION\` |"
+            if [ "$AVAILABLE" = "true" ]; then
+              echo "| seqkit for the tests | downloaded, verified against upstream's .md5.txt, and proven to report this version |"
+            else
+              echo "| seqkit for the tests | **unavailable** -- upstream release assets could not be fetched from this runner |"
+            fi
+            echo "| pytest result | \`$(tail -n 1 pytest.log 2>/dev/null || echo 'did not reach the test run')\` |"
+            echo
+            if [ "$AVAILABLE" != "true" ]; then
+              echo "Two GUI assertions that need a real binary were deselected, and the"
+              echo "seqkit-dependent tests using the \`seqkit_binary\` fixture reported as"
+              echo "skipped. The rest of the suite ran normally."
+              echo
+              echo "A green job here therefore means *everything that could run, passed*;"
+              echo "check this table before reading it as full coverage."
+              echo
+            fi
+            echo "Closed by design in every CI job, so a green row is not a claim about them:"
+            echo
+            echo "| gate | why it stays closed here |"
+            echo "| --- | --- |"
+            echo "| \`--with-screenshots\` + \`SEQKIT_GUI_SHOOT=1\` | interface images are documentation assets; see the note at the top of this file. No job in either workflow opens them. |"
+            echo "| \`--with-launchers\` | starts \`run.bat\` / \`run.sh\` as subprocesses; measured on the real desktop, where the shell that reads them is the one a user has. |"
+          } >> "$GITHUB_STEP_SUMMARY"
+

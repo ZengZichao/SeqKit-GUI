@@ -1,0 +1,145 @@
+name: "功能请求 / Feature request"
+description: "希望界面新增或改进的能力：控件、命令覆盖、输出视图、语言与主题、打包与文档"
+title: "[Feature] "
+labels:
+  - enhancement
+body:
+  - type: markdown
+    attributes:
+      value: >
+        SeqKit GUI 只做两件事：**把参数收齐、把命令行拼对，然后调用官方 `seqkit` 可执行文件**。它不实现任何序列计算。
+
+        因此请先把需求归到这三类之一：
+
+        - **界面层**（控件、布局、校验、结果视图、语言、主题、设置）—— 本项目能改，用这个模板。
+
+        - **参数表层**（界面少了 / 多了 / 默认值与你的 seqkit 版本对不上）—— 这不是功能请求，这是数据问题，请用 **参数表不一致 / Spec mismatch** 模板。
+
+        - **seqkit 本体层**（希望多一个算法、多一个参数、某个命令换实现）—— 请用这个模板提出，但能否落地取决于上游 <https://github.com/shenwei356/seqkit>；本项目不会自己造参数。
+
+        本项目由一个人利用业余时间维护。请写清「你在什么场景下被卡住」，这比「建议加个 XX 功能」更容易被排进计划。中文或英文描述都可以。
+  - type: input
+    id: summary
+    attributes:
+      label: "需求概述 / Summary"
+      description: "一句话说明想要什么，例如「希望 subseq 的 --region 支持从文件批量读取区间」"
+      placeholder: "一句话的需求"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: area
+    attributes:
+      label: "涉及界面哪一块 / Which part of the app"
+      options:
+        - "左侧命令树与搜索"
+        - "参数表单（控件类型、默认值、必填判定、枚举候选、校验）"
+        - "输入文件区（多选、拖拽、路径、工作目录）"
+        - "命令组装（拼出的命令行）"
+        - "输出面板（结果 / 错误 / 日志 / 命令行四个标签、保存、截断）"
+        - "运行控制（运行、停止、状态栏、退出码与耗时）"
+        - "顶栏与语言 / 主题 / 字号"
+        - "设置对话框与偏好持久化"
+        - "打包版（dist 目录、图标、启动方式）"
+        - "文档（docs/zh、docs/en）"
+        - "开发流程（测试、参数表生成、贡献方式）"
+        - "其他 / 不确定"
+    validations:
+      required: true
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: "你现在被卡在哪 / What you are trying to do and what blocks you"
+      description: >
+        描述真实场景：哪个命令、什么样的输入数据、你想得到什么、现在只能怎么绕过去。
+        绕路的代价（手工点多少次、要不要退回终端）是判断优先级的关键依据，请具体写。
+        如果是命令组装或参数显示类问题，请附上「命令行」标签里的原文（`Ctrl+Shift+C` 复制）。
+      placeholder: |
+        我经常要对 30 个样本跑 subseq，区间列表存在一个 bed 里。
+        现在只能在界面里一个个改 --region 再点运行，一轮下来要手动点 60 多次，
+        所以我还是回终端写 for 循环。
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposal
+    attributes:
+      label: "期望的做法 / Proposed solution"
+      description: >
+        请尽量落到界面位置：放在哪个区、叫什么名字、和现有控件怎么互动（参考 `docs/zh/interface-guide.md` 的分区命名）。
+        本项目的一条既有约定是「不勾选就不传」—— 未勾选的参数完全不出现在命令行里，seqkit 用它自己的默认值。
+        如果你的方案会破坏这条约定，请说明理由。
+      placeholder: |
+        在 subseq 的 --region 参数行右侧加一个「从文件载入」按钮，
+        选中文件后把每行区间填进现有多行框，仍然由界面逐行拼成 --region a --region b。
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: "考虑过的替代方案 / Alternatives you considered"
+      description: "包括「什么都不做」—— 请说明为什么替代方案不够用。"
+      placeholder: "用「视图 → 搜索参数」逐个填；或用终端脚本。前者太慢，后者失去了界面的文件选择与结果预览。"
+    validations:
+      required: false
+
+  - type: dropdown
+    id: upstream
+    attributes:
+      label: "是否需要 seqkit 上游先支持 / Does this need upstream seqkit to change first?"
+      description: "决定这个需求是本项目能独立完成，还是只能先记录等待上游"
+      options:
+        - "不需要，纯界面改动，参数与命令行都是现成的"
+        - "需要上游新增或改变 seqkit 的参数 / 行为"
+        - "不确定"
+    validations:
+      required: true
+
+  - type: textarea
+    id: frequency
+    attributes:
+      label: "使用频率与影响 / How often would you use it"
+      description: >
+        大概多久遇到一次（每天 / 每周 / 偶尔）、不做的话你会怎么处理。solo 维护者的排期基本按这一项排序，请如实写。
+      placeholder: "每个项目开始时会用 2-3 次；不做的话我会继续用终端脚本，界面只用来做零散查询。"
+    validations:
+      required: false
+
+  - type: input
+    id: env
+    attributes:
+      label: "你的版本信息（可选）/ Your versions (optional)"
+      description: >
+        如果需求与平台或版本相关（打包、字体、macOS、seqkit 版本）请填；纯界面偏好可留空。
+        格式：`OS / Python / PySide6 / seqkit / 源码或打包版`。
+      placeholder: "Windows 11 23H2 x64 / Python 3.10.11 / PySide6 6.9.1 / seqkit 2.14.0 / 源码运行"
+    validations:
+      required: false
+
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: "提交前确认 / Before submitting"
+      options:
+        - label: "我已在左侧命令树和「视图 → 搜索参数」（`Ctrl+F`）里找过，确认界面现在没有这个能力"
+          required: false
+        - label: "我搜过已开启与已关闭的 issue，确认没人提过同样的需求"
+          required: false
+        - label: "我已读过 docs/zh/faq.md（或 docs/en/faq.md）与 docs/zh/interface-guide.md，确认这不是用法问题"
+          required: false
+        - label: "这不是参数表与实际 seqkit 版本不一致（那种情况请用 Spec mismatch 模板）"
+          required: false
+        - label: "我愿意提交 PR 实现（不熟 PySide6 也可以先说，我会挑适合外部贡献的）"
+          required: false
+        - label: "我接受这个需求可能长期不被实现，也接受被直接关闭并说明理由"
+          required: false
+
+  - type: markdown
+    attributes:
+      value: >
+        ---
+
+        维护者说明：本项目的功能优先级按「挡住多少人 × 每周遇到多少次」排序，而不是按呼声数量。
+        需要上游 seqkit 先支持的需求会被标记后长期保留，不会假装马上能做。
